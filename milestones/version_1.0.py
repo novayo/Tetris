@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 
 ########################################################################
 ############################## Pygame 資源 ##############################
@@ -13,8 +14,10 @@ background = pygame.display.set_mode((360, 720))  # 建立背景
 ############################### 遊戲 資源 ###############################
 ########################################################################
 rect_width = 360 // 12  # row 12格
-moving_rect = None
+moving_rect = None  # [x, y]
+moving_rect_color = (0, 0, 0)  # (r, g, b)
 fixed_rects_set = set()  # [i, j]
+fixed_rects_color_mapping_dict = {}
 
 # 產生 index 對應座標
 index_mapping = {}
@@ -27,10 +30,15 @@ for i in range(360 // rect_width):
 ################################# 函數 ##################################
 ########################################################################
 def move_or_generate_rect():
-    global moving_rect
+    global moving_rect, moving_rect_color
 
     if moving_rect is None:
         moving_rect = [4, 0]
+        moving_rect_color = (
+            random.randint(0, 255),
+            random.randint(0, 255),
+            random.randint(0, 255),
+        )
         return
 
     # 如果下一格 到底了or有方塊 就停下來
@@ -38,7 +46,10 @@ def move_or_generate_rect():
     if next_pos not in index_mapping or next_pos in fixed_rects_set:
         # 將移動物體變成停止物體
         fixed_rects_set.add((moving_rect[0], moving_rect[1]))
-        moving_rect = None
+        fixed_rects_color_mapping_dict[moving_rect[0], moving_rect[1]] = (
+            moving_rect_color
+        )
+        moving_rect = moving_rect_color = None
 
         # 判斷是否要消除一行（因為只有物體，所以只需判斷一行）
         for j in range(720 // rect_width - 1, -1, -1):
@@ -54,12 +65,17 @@ def move_or_generate_rect():
                 # 刪除這行
                 for i in range(360 // rect_width):
                     fixed_rects_set.remove((i, j))
+                    del fixed_rects_color_mapping_dict[i, j]
                 # 讓上面的物體都往下一格
                 for _j in range(j - 1, -1, -1):
                     for i in range(360 // rect_width):
                         if (i, _j) in fixed_rects_set:
-                            fixed_rects_set.remove((i, _j))
                             fixed_rects_set.add((i, _j + 1))
+                            fixed_rects_set.remove((i, _j))
+                            fixed_rects_color_mapping_dict[i, _j + 1] = (
+                                fixed_rects_color_mapping_dict[i, _j]
+                            )
+                            del fixed_rects_color_mapping_dict[i, _j]
                 break
         return
 
@@ -68,18 +84,21 @@ def move_or_generate_rect():
 
 
 def draw_rect():
+    global moving_rect_color
     # 畫移動中的方塊
     if moving_rect is not None:
         x, y = index_mapping[moving_rect[0], moving_rect[1]]
+        r, g, b = moving_rect_color
         pygame.draw.rect(
-            background, (255, 255, 255), pygame.Rect(x, y, rect_width, rect_width)
+            background, (r, g, b), pygame.Rect(x, y, rect_width, rect_width)
         )  # 畫正方形 實心白色
 
     # 畫非移動中的方塊
     for i, j in fixed_rects_set:
         x, y = index_mapping[i, j]
+        r, g, b = fixed_rects_color_mapping_dict[i, j]
         pygame.draw.rect(
-            background, (255, 255, 255), pygame.Rect(x, y, rect_width, rect_width)
+            background, (r, g, b), pygame.Rect(x, y, rect_width, rect_width)
         )  # 畫正方形 實心白色
 
 
