@@ -142,24 +142,30 @@ def move_right():
 ####################################################
 ####################### 本體 #######################
 ####################################################
-_DELAY = 0
-while True:
-    FPS.tick(60)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # 如果點視窗的叉叉
-            pygame.quit()  # 離開pygame
-            sys.exit()  # 關閉程式
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                move_left()
-            elif event.key == pygame.K_RIGHT:
-                move_right()
+def main():
+    """Main function to run the game."""
+    _delay_sec = 0
+    while True:
+        FPS.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # 如果點視窗的叉叉
+                pygame.quit()  # 離開pygame
+                sys.exit()  # 關閉程式
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    move_left()
+                elif event.key == pygame.K_RIGHT:
+                    move_right()
 
-    _DELAY += 1
-    background.fill((0, 0, 0))  # 畫背景 黑色
-    # 每秒一次
-    if _DELAY >= 3:
-        move_or_generate_rect()
-        _DELAY = 0
-    draw_rect()
-    pygame.display.flip()  # 更新畫面
+        _delay_sec += 1
+        background.fill((0, 0, 0))  # 畫背景 黑色
+        # 每秒一次
+        if _delay_sec >= 3:
+            move_or_generate_rect()
+            _delay_sec = 0
+        draw_rect()
+        pygame.display.flip()  # 更新畫面
+
+
+if __name__ == "__main__":
+    main()
