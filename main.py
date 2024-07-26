@@ -2,14 +2,14 @@ from attributes import GAME_ATTR
 from attributes import COLORS
 from attributes import GRID
 from shapes import ShapeBase
-from typing import Optional, List
+from typing import Optional, List, Union
 import pygame
 import sys
 import random
 
 
 class Game:
-    row_fixed_colors: dict[int, List[Optional[COLORS]]] = {}
+    row_fixed_colors: dict[int, List[Optional[Union[COLORS, pygame.Surface]]]] = {}
     moving_obj: Optional[ShapeBase]
     _wait_ticks_counter: int = 0
 
@@ -43,8 +43,11 @@ class Game:
                 _x, _y = self._index_to_pos(_x, _y)
 
                 # 畫背景顏色
-                pygame.draw.rect(self.bg, self.moving_obj.color, pygame.Rect(
-                    _x, _y, GAME_ATTR.BLOCK_SIZE, GAME_ATTR.BLOCK_SIZE))
+                if self.moving_obj.is_show_image:
+                    self.bg.blit(self.moving_obj.image, (_x, _y))
+                else:
+                    pygame.draw.rect(self.bg, self.moving_obj.color, pygame.Rect(
+                        _x, _y, GAME_ATTR.BLOCK_SIZE, GAME_ATTR.BLOCK_SIZE))
 
         # 畫靜止方塊
         for i in range(GAME_ATTR.NUM_ROW):
@@ -52,9 +55,12 @@ class Game:
                 if self.row_fixed_colors[i][j]:
                     x, y = self._index_to_pos(i, j)
 
-                    # 畫背景顏色
-                    pygame.draw.rect(self.bg, self.row_fixed_colors[i][j], pygame.Rect(
-                        x, y, GAME_ATTR.BLOCK_SIZE, GAME_ATTR.BLOCK_SIZE))
+                    # 畫背景顏色 或 圖片
+                    if isinstance(self.row_fixed_colors[i][j], pygame.Surface):
+                        self.bg.blit(self.row_fixed_colors[i][j], (x, y))
+                    else:
+                        pygame.draw.rect(self.bg, self.row_fixed_colors[i][j], pygame.Rect(
+                            x, y, GAME_ATTR.BLOCK_SIZE, GAME_ATTR.BLOCK_SIZE))
 
     def draw_grid(self):
         for i in range(GAME_ATTR.NUM_ROW):
@@ -72,14 +78,17 @@ class Game:
 
             # 將固定的物件的位置跟顏色存起來
             for x, y in self.moving_obj.current_shape_pos:
-                self.row_fixed_colors[x][y] = self.moving_obj.color
+                if self.moving_obj.is_show_image:
+                    self.row_fixed_colors[x][y] = self.moving_obj.image
+                else:
+                    self.row_fixed_colors[x][y] = self.moving_obj.color
             self.moving_obj = None
         else:
             # 往下移動一格
             self.moving_obj.x_offset += 1
 
     def get_next_block(self):
-        return random.choice(ShapeBase.__subclasses__())()
+        return random.choice(ShapeBase.__subclasses__())(is_show_image=random.choice([True, False]))
 
     def start(self):
         while True:
