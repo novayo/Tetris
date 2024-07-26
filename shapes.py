@@ -2,6 +2,7 @@ from typing_extensions import override, List
 from attributes import COLORS
 from attributes import GAME_ATTR
 import random
+import pygame
 
 
 class ShapeBase:
@@ -9,9 +10,11 @@ class ShapeBase:
     idx_shape: int
     x_offset: int = 0
     y_offset: int = GAME_ATTR.NUM_COL // 2 - 1
+    is_show_image: bool = False
 
-    def __init__(self):
+    def __init__(self, is_show_image):
         self.idx_shape = random.randint(0, len(self.shapes)-1)
+        self.is_show_image = is_show_image
 
     @override
     @property
@@ -22,6 +25,13 @@ class ShapeBase:
     @property
     def color(self) -> COLORS:
         raise NotImplementedError
+    
+    @property
+    def image(self) -> pygame.Surface:
+        raise NotImplementedError
+
+    def normalize_image(self, image) -> pygame.Surface:
+        return pygame.transform.scale(image, (GAME_ATTR.BLOCK_SIZE, GAME_ATTR.BLOCK_SIZE))
 
     @property
     def current_shape_pos(self):
@@ -51,6 +61,11 @@ class ShapeO(ShapeBase):
     def color(self):
         return COLORS.YELLOW
 
+    @override
+    @property
+    def image(self):
+        return self.normalize_image(pygame.image.load('res/amazon.png').convert_alpha())
+
 
 class ShapeI(ShapeBase):
     @property
@@ -63,6 +78,11 @@ class ShapeI(ShapeBase):
     @property
     def color(self):
         return COLORS.BLUE
+
+    @override
+    @property
+    def image(self):
+        return self.normalize_image(pygame.image.load('res/apple.png').convert_alpha())
 
 
 class ShapeS(ShapeBase):
@@ -77,6 +97,11 @@ class ShapeS(ShapeBase):
     def color(self):
         return COLORS.GREEN
 
+    @override
+    @property
+    def image(self):
+        return self.normalize_image(pygame.image.load('res/facebook.png').convert_alpha())
+
 
 class ShapeZ(ShapeBase):
     @property
@@ -89,6 +114,11 @@ class ShapeZ(ShapeBase):
     @property
     def color(self):
         return COLORS.RED
+    
+    @override
+    @property
+    def image(self):
+        return self.normalize_image(pygame.image.load('res/google.png').convert_alpha())
 
 
 class ShapeL(ShapeBase):
@@ -104,6 +134,11 @@ class ShapeL(ShapeBase):
     @property
     def color(self):
         return COLORS.ORANGE
+    
+    @override
+    @property
+    def image(self):
+        return self.normalize_image(pygame.image.load('res/microsoft.png').convert_alpha())
 
 
 class ShapeJ(ShapeBase):
@@ -119,6 +154,11 @@ class ShapeJ(ShapeBase):
     @property
     def color(self):
         return COLORS.PINK
+    
+    @override
+    @property
+    def image(self):
+        return self.normalize_image(pygame.image.load('res/netflix.png').convert_alpha())
 
 
 class ShapeT(ShapeBase):
@@ -134,3 +174,8 @@ class ShapeT(ShapeBase):
     @property
     def color(self):
         return COLORS.PURPLE
+
+    @override
+    @property
+    def image(self):
+        return self.normalize_image(pygame.image.load('res/dino.png').convert_alpha())
